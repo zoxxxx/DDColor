@@ -1,8 +1,8 @@
 import glob
 from tqdm import tqdm
 
-output_name = 'dataset_name.txt'
-data_path = '/path/to/dataset'
+output_name = 'imagenet_val.txt'
+data_path = '/root/autodl-tmp/imagenet/val'
 
 print(f'Generating {output_name} from {data_path} ...')
 
