@@ -72,7 +72,18 @@ class LabDataset(data.Dataset):
             finally:
                 retry -= 1
         img_gt = imfrombytes(img_bytes, float32=True)
+
+        # --------------------------------  add change for sketch   -------------------------------- #
+        wide_div2 = img_gt.shape[1] // 2
+        img_gt , img_lq = img_gt[:, :wide_div2, :], img_gt[:, wide_div2:, :]
+        # 将白色像素变成随机颜色
+        img_gt[np.all(img_gt == (1., 1., 1.), axis=-1)] = (random.random(), random.random(), random.random())
+        # --------------------------------      end change          -------------------------------- #
         img_gt = cv2.resize(img_gt, (gt_size, gt_size))  # TODO: 直接resize是否是最佳方案？
+
+        # --------------------------------  add change for sketch   -------------------------------- #
+        img_lq = cv2.resize(img_lq, (gt_size, gt_size))
+        # --------------------------------      end change          -------------------------------- #
         
         # -------------------------------- (Optional) CutMix & FMix -------------------------------- #
         if self.do_fmix and np.random.uniform(0., 1., size=1)[0] > self.fmix_p:
@@ -105,19 +116,30 @@ class LabDataset(data.Dataset):
 
         # ----------------------------- Get gray lq, to tentor ----------------------------- #
         # convert to gray
+        # img_gt = cv2.cvtColor(img_gt, cv2.COLOR_BGR2RGB)
+        # img_l, img_ab = rgb2lab(img_gt)
+
+        # target_a, target_b = self.ab2int(img_ab)
+
+        # # numpy to tensor
+        # img_l, img_ab = img2tensor([img_l, img_ab], bgr2rgb=False, float32=True)
+        # target_a, target_b = torch.LongTensor(target_a), torch.LongTensor(target_b)
+        # return_d = {
+        #     'lq': img_l,
+        #     'gt': img_ab,
+        #     'target_a': target_a,
+        #     'target_b': target_b,
+        #     'lq_path': gt_path,
+        #     'gt_path': gt_path
+        # }
+        # return return_d
         img_gt = cv2.cvtColor(img_gt, cv2.COLOR_BGR2RGB)
-        img_l, img_ab = rgb2lab(img_gt)
-
-        target_a, target_b = self.ab2int(img_ab)
-
-        # numpy to tensor
-        img_l, img_ab = img2tensor([img_l, img_ab], bgr2rgb=False, float32=True)
-        target_a, target_b = torch.LongTensor(target_a), torch.LongTensor(target_b)
+        img_lq, _ = rgb2lab(cv2.cvtColor(img_lq, cv2.COLOR_BGR2RGB))
+        img_gt = img2tensor(img_gt, bgr2rgb=False, float32=True)
+        img_lq = img2tensor(img_lq, bgr2rgb=False, float32=True)
         return_d = {
-            'lq': img_l,
-            'gt': img_ab,
-            'target_a': target_a,
-            'target_b': target_b,
+            'lq': img_lq,
+            'gt': img_gt,
             'lq_path': gt_path,
             'gt_path': gt_path
         }

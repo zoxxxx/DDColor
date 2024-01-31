@@ -1,8 +1,8 @@
 import glob
 from tqdm import tqdm
 
-output_name = 'imagenet_val.txt'
-data_path = '/root/autodl-tmp/imagenet/val'
+output_name = 'anime.txt'
+data_path = '/root/autodl-tmp/anime/train'
 
 print(f'Generating {output_name} from {data_path} ...')
 

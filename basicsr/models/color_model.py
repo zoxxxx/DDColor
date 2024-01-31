@@ -130,8 +130,8 @@ class ColorModel(BaseModel):
         self.lq_rgb = tensor_lab2rgb(torch.cat([self.lq, torch.zeros_like(self.lq), torch.zeros_like(self.lq)], dim=1))
         if 'gt' in data:
             self.gt = data['gt'].to(self.device)
-            self.gt_lab = torch.cat([self.lq, self.gt], dim=1)
-            self.gt_rgb = tensor_lab2rgb(self.gt_lab)
+            # self.gt_lab = torch.cat([self.lq, self.gt], dim=1)
+            self.gt_rgb = self.gt
 
             if self.opt['train'].get('color_enhance', False):
                 for i in range(self.gt_rgb.shape[0]):
@@ -151,7 +151,8 @@ class ColorModel(BaseModel):
         loss_dict = OrderedDict()
         # pixel loss
         if self.cri_pix:
-            l_g_pix = self.cri_pix(self.output_ab, self.gt)
+            # l_g_pix = self.cri_pix(self.output_ab, self.gt)
+            l_g_pix = self.cri_pix(self.output_rgb, self.gt)
             l_g_total += l_g_pix
             loss_dict['l_g_pix'] = l_g_pix
 
@@ -210,10 +211,10 @@ class ColorModel(BaseModel):
 
         if hasattr(self, 'gt'):
             out_dict['gt'] = self.gt_rgb.detach().cpu()
-            if self.opt['logger'].get('save_snapshot_verbose', False):  # only for verbose
-                self.gt_lab_chroma = torch.cat([torch.ones_like(self.lq) * 50, self.gt], dim=1)
-                self.gt_rgb_chroma = tensor_lab2rgb(self.gt_lab_chroma)
-                out_dict['gt_chroma'] = self.gt_rgb_chroma.detach().cpu()
+        #     if self.opt['logger'].get('save_snapshot_verbose', False):  # only for verbose
+        #         self.gt_lab_chroma = torch.cat([torch.ones_like(self.lq) * 50, self.gt], dim=1)
+        #         self.gt_rgb_chroma = tensor_lab2rgb(self.gt_lab_chroma)
+        #         out_dict['gt_chroma'] = self.gt_rgb_chroma.detach().cpu()
         return out_dict
 
     def test(self):
